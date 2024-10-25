@@ -18,8 +18,8 @@ jobs:
   qemu-user-static:
     runs-on: ubuntu-latest
     env:
-      VERSION: 7.2.0-1
-      ORIGIN_VERSION: 7.2+dfsg-1~bpo11+2
+      VERSION: 9.0.2-1
+      ORIGIN_VERSION: 9.0.2+ds-1~bpo12+1
     steps:
       - uses: actions/checkout@v2
       - name: Set variables
@@ -32,11 +32,16 @@ jobs:
           ./run.sh -t "${{ env.VERSION }}" -r "${{ env.GITHUB_REPOSITORY }}" -d "${{ env.DOCKER_REPO }}"
       - name: Test
         run: ./test.sh -d "${{ env.DOCKER_REPO }}"
-      - name: Publish
-        if: github.ref == 'refs/heads/master'
+      
+      - name: Package QEMU Binaries
         run: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
-          docker push --all-tags ${{ env.DOCKER_REPO }}
+          cd releases/usr/bin
+          tar -czf qemu-static-all.tar.gz qemu-*-static
+      # - name: Publish
+      #   if: github.ref == 'refs/heads/master'
+      #   run: |
+      #     docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_TOKEN }}
+      #     docker push --all-tags ${{ env.DOCKER_REPO }}
       - name: Create Release
         if: github.ref == 'refs/heads/master'
         uses: ncipollo/release-action@v1
